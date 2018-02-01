@@ -22,15 +22,18 @@ namespace ReactiveEditor.UserControls
         {
             this.WhenAnyValue(x => x.DataContext).BindTo(this, x => x.ViewModel);
             rotateTransform = new RotateTransform();
+            //Set up disposable subscriptions
             this.WhenActivated(d =>
             {
+                //Update the rotatetransform when RotationAngle changes
                 d.Invoke(this.Bind(this.ViewModel, x => x.RotationAngle, x => x.rotateTransform.Angle));
+                //Hook up mouse events for movement handling
                 d.Invoke(this.Events()
                     .MouseLeftButtonDown
                     .Subscribe(x => LeftMouseDownHandler(x)));
                 d.Invoke(this.Events()
                     .MouseMove
-                    .Sample(TimeSpan.FromMilliseconds(10))
+                    .Sample(TimeSpan.FromMilliseconds(20)) // Limit mouse move updates
                     .ObserveOn(RxApp.MainThreadScheduler)
                     .Subscribe(e => MouseMoveHandler(e)));
                 d.Invoke(this.Events()
@@ -47,10 +50,13 @@ namespace ReactiveEditor.UserControls
             oldX = ViewModel.Left;
             oldY = ViewModel.Top;
             var mousePoint = e.GetPosition(this);
-            //Transform MousePoint with the rotation
+            //Transform MousePoint with the rotation to get the real x,y Point
             transformedMouseDownLocation = rotateTransform.Transform(mousePoint);
+            //Signal we are moving this instance manually
             ViewModel.IsMoving = true;
+            //Capture the mouse so we dont drag the cursor out of the bounds of the control
             Mouse.Capture(this);
+            //Bubble event based on Selection to allow for selection/movement
             e.Handled = ViewModel.IsSelected;
         }
 
@@ -64,7 +70,7 @@ namespace ReactiveEditor.UserControls
                 var deltaY = transformedMousePoint.Y - transformedMouseDownLocation.Y;
                 var newX = ViewModel.Left + deltaX;
                 var newY = ViewModel.Top + deltaY;
-                // If Left or Top were changed externally only allow movement in the other direction (clipping)
+                // If Left or Top were changed externally since the last update only allow movement in the opposite direction (clipping)
                 if (oldX == ViewModel.Left || (oldX < ViewModel.Left && newX > oldX) || (oldX > ViewModel.Left && newX < oldX))
                 {
                     ViewModel.Left = newX;

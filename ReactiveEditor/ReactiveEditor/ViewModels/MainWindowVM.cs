@@ -11,19 +11,9 @@ namespace ReactiveEditor.ViewModels
 {
     public class MainWindowVM : ReactiveObject
     {
-        private const int gridSize = 10;
-
         private readonly Random rnd = new Random(DateTime.Now.Millisecond);
 
         private IDisposable rectangleSpawner;
-
-        private double sheetWidth = 500;
-
-        public double SheetWidth
-        {
-            get { return sheetWidth; }
-            set { this.RaiseAndSetIfChanged(ref sheetWidth, value); }
-        }
 
         private double drawAreaWidth;
 
@@ -57,13 +47,6 @@ namespace ReactiveEditor.ViewModels
             set { this.RaiseAndSetIfChanged(ref selectedMovables, value); }
         }
 
-        private ObservableAsPropertyHelper<string> selectedMovablesInfo;
-
-        public string SelectedMovablesInfo
-        {
-            get { return selectedMovablesInfo.Value; }
-        }
-
         public ReactiveCommand AddCircleCommand { get; private set; }
 
         public ReactiveCommand AddSquareCommand { get; private set; }
@@ -92,75 +75,25 @@ namespace ReactiveEditor.ViewModels
             //Limit Circles to 5
             var canCreateCircles = Movables.Changed.ToUnit().Select(_ => Movables.Count(m => m is CircleVM) < 5).StartWith(true);
             AddCircleCommand = ReactiveCommand.Create(AddCircle, canCreateCircles);
+
             //Only allow Squares when there are at least 2 Circles
             var canCreateSquares = Movables.Changed.ToUnit().Select(_ => Movables.Count(m => m is CircleVM) >= 2);
             AddSquareCommand = ReactiveCommand.Create(AddSquare, canCreateSquares);
+
             //Some commands only make sense when something is selected
             var anythingSelected = SelectedMovables.CountChanged.Select(c => c > 0);
             DeselectAllCommand = ReactiveCommand.Create(DeselectAll, anythingSelected);
             RotateSelectedCommand = ReactiveCommand.Create(RotateSelected, anythingSelected);
             DeleteSelectedCommand = ReactiveCommand.Create(DeleteSelected, anythingSelected);
             ToggleSquareSpawnerCommand = ReactiveCommand.Create(ToggleSquareSpawner, canCreateSquares);
+
+            //When one item is moved manually move all the other selected movables too
             Movables.ItemChanged
                 .Where(x => x.Sender.IsMoving)
                 .Select(x => new { x.Sender, Pos = new Point(x.Sender.Left, x.Sender.Top) })
                 .Buffer(2, 1)
                 .Where(x => x[0].Sender == x[1].Sender)
                 .Subscribe(x => MovableMoved(x[0].Sender, x[0].Pos, x[1].Pos));
-            selectedMovablesInfo =
-                SelectedMovables.Changed.ToUnit()
-                .Merge(SelectedMovables.ItemChanged.ToUnit())
-                .Select(_ => GetInfoAboutSelected())
-                .ToProperty(this, x => x.SelectedMovablesInfo);
-        }
-
-        private string GetInfoAboutSelected()
-        {
-            if (selectedMovables == null || selectedMovables.Count < 0)
-                return "";
-            else
-                return string.Join(" ... ", selectedMovables.OrderBy(x => x.Left).ThenBy(x => x.Top).Select(x => $"{x.ToString()}"));
-        }
-
-        private void ToggleSquareSpawner()
-        {
-            if (rectangleSpawner == null)
-            {
-                rectangleSpawner = Observable
-                .Interval(TimeSpan.FromSeconds(1))
-                .ToUnit()
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .InvokeCommand(AddSquareCommand);
-            }
-            else
-            {
-                rectangleSpawner.Dispose();
-                rectangleSpawner = null;
-            }
-        }
-
-        private void DeselectAll()
-        {
-            if (SelectedMovables == null || SelectedMovables.Count < 1)
-                return;
-            for (int i = SelectedMovables.Count - 1; i >= 0; i--)
-            {
-                Movables[i].IsSelected = false;
-            }
-            SelectedMovables.Clear();
-        }
-
-        private void RotateSelected()
-        {
-            foreach (var item in selectedMovables)
-            {
-                item.Rotate();
-            }
-        }
-
-        private void DeleteSelected()
-        {
-            Movables.RemoveAll(new List<IMovable>(selectedMovables));
         }
 
         private void AddCircle()
@@ -179,6 +112,22 @@ namespace ReactiveEditor.ViewModels
             movable.Left = rnd.NextDouble() * (drawAreaWidth > 0 ? (drawAreaWidth - movable.Width) : 200);
             movable.Top = rnd.NextDouble() * (drawAreaHeight > 0 ? (drawAreaHeight - movable.Height) : 200);
             Movables.Add(movable);
+        }
+
+        private void DeleteSelected()
+        {
+            Movables.RemoveAll(new List<IMovable>(selectedMovables));
+        }
+
+        private void DeselectAll()
+        {
+            if (SelectedMovables == null || SelectedMovables.Count < 1)
+                return;
+            for (int i = SelectedMovables.Count - 1; i >= 0; i--)
+            {
+                Movables[i].IsSelected = false;
+            }
+            SelectedMovables.Clear();
         }
 
         private void MovableMoved(IMovable sender, Point oldPos, Point newPos)
@@ -227,6 +176,31 @@ namespace ReactiveEditor.ViewModels
             if (maxY > drawAreaHeight)
             {
                 sender.Top = sender.Top - (maxY - drawAreaHeight);
+            }
+        }
+
+        private void RotateSelected()
+        {
+            foreach (var item in selectedMovables)
+            {
+                item.Rotate();
+            }
+        }
+
+        private void ToggleSquareSpawner()
+        {
+            if (rectangleSpawner == null)
+            {
+                rectangleSpawner = Observable
+                .Interval(TimeSpan.FromSeconds(1))
+                .ToUnit()
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .InvokeCommand(AddSquareCommand);
+            }
+            else
+            {
+                rectangleSpawner.Dispose();
+                rectangleSpawner = null;
             }
         }
     }

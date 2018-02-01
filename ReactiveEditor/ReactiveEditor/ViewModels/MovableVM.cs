@@ -82,7 +82,9 @@ namespace ReactiveEditor.ViewModels
 
         protected MovableVM()
         {
+            //Recalculate Right when either Left or Width changed
             right = this.WhenAnyValue(x => x.Left, x => x.Width, (l, w) => l + w).ToProperty(this, x => x.Right);
+            //Recaculate Bottom when either Top or Height changed
             bottom = this.WhenAnyValue(x => x.Top, x => x.Height, (t, h) => t + h).ToProperty(this, x => x.Bottom);
         }
 

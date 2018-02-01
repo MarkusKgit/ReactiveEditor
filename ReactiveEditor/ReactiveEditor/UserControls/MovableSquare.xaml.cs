@@ -2,6 +2,7 @@
 
 namespace ReactiveEditor.UserControls
 {
+    //Since XAML can't handle generic UserControl define a non-generic class
     public class MovableSquareInternal : MovableControl<SquareVM>
     {
     }
