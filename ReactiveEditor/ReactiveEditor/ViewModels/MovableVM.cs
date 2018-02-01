@@ -1,5 +1,7 @@
 ﻿using ReactiveUI;
+using System;
 using System.Linq;
+using System.Reactive.Linq;
 
 namespace ReactiveEditor.ViewModels
 {
@@ -86,6 +88,10 @@ namespace ReactiveEditor.ViewModels
             right = this.WhenAnyValue(x => x.Left, x => x.Width, (l, w) => l + w).ToProperty(this, x => x.Right);
             //Recaculate Bottom when either Top or Height changed
             bottom = this.WhenAnyValue(x => x.Top, x => x.Height, (t, h) => t + h).ToProperty(this, x => x.Bottom);
+            //Limit Rotation Angle to 0 <= r < 360
+            this.WhenAnyValue(x => x.RotationAngle)
+                .Where(r => r >= 360 || r < 0)
+                .Subscribe(r => this.RotationAngle = Math.Abs(r) % 360);
         }
 
         public override string ToString()
@@ -93,7 +99,7 @@ namespace ReactiveEditor.ViewModels
             var typeName = this.GetType().ToString();
             if (typeName.Contains("."))
                 typeName = typeName.Split('.').Last();
-            return $"{typeName}: Left: {this.Left:F0}, Right: {this.Right:F0}";
+            return $"{typeName}: x: {this.Left:F0}, y: {this.Right:F0}, rot: {this.RotationAngle:F1}";
         }
     }
 }
