@@ -51,6 +51,8 @@ namespace ReactiveEditor.ViewModels
 
         public ReactiveCommand AddSquareCommand { get; private set; }
 
+        public ReactiveCommand AddTriangleCommand { get; private set; }
+
         public ReactiveCommand DeselectAllCommand { get; private set; }
 
         public ReactiveCommand RotateSelectedCommand { get; private set; }
@@ -71,6 +73,7 @@ namespace ReactiveEditor.ViewModels
             };
             AddCircle();
             AddSquare();
+            AddTriangle();
 
             //Limit Circles to 5
             var canCreateCircles = Movables.Changed.ToUnit().Select(_ => Movables.Count(m => m is CircleVM) < 5).StartWith(true);
@@ -79,6 +82,8 @@ namespace ReactiveEditor.ViewModels
             //Only allow Squares when there are at least 2 Circles
             var canCreateSquares = Movables.Changed.ToUnit().Select(_ => Movables.Count(m => m is CircleVM) >= 2);
             AddSquareCommand = ReactiveCommand.Create(AddSquare, canCreateSquares);
+
+            AddTriangleCommand = ReactiveCommand.Create(AddTriangle);
 
             //Some commands only make sense when something is selected
             var anythingSelected = SelectedMovables.CountChanged.Select(c => c > 0);
@@ -105,6 +110,11 @@ namespace ReactiveEditor.ViewModels
         {
             var randomColor = Color.FromRgb((byte)rnd.Next(256), (byte)rnd.Next(256), (byte)rnd.Next(256));
             AddMovable(new SquareVM { Width = rnd.NextDouble() * 50 + 20, Color = randomColor });
+        }
+
+        private void AddTriangle()
+        {
+            AddMovable(new TriangleVM { Height = rnd.NextDouble() * 50 + 20, Width = rnd.NextDouble() * 50 + 20 });
         }
 
         private void AddMovable(IMovable movable)

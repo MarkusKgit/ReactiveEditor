@@ -85,12 +85,19 @@
     <Compile Include="UserControls\MovableSquare.xaml.cs">
       <DependentUpon>MovableSquare.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\MovableTriangle.xaml.cs">
+      <DependentUpon>MovableTriangle.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\CircleVM.cs" />
     <Compile Include="ViewModels\IMovable.cs" />
     <Compile Include="ViewModels\MainWindowVM.cs" />
     <Compile Include="ViewModels\MovableVM.cs" />
     <Compile Include="ViewModels\RectangleVM.cs" />
     <Compile Include="ViewModels\SquareVM.cs" />
+    <Page Include="UserControls\MovableTriangle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -103,6 +110,7 @@
     <Compile Include="Helpers\ReactiveExtensions.cs" />
     <Compile Include="Helpers\SelectedItemsBinder.cs" />
     <Compile Include="Helpers\VisualHelpers.cs" />
+    <Compile Include="ViewModels\TriangleVM.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

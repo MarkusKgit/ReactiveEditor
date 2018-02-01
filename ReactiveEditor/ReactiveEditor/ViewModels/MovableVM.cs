@@ -99,7 +99,7 @@ namespace ReactiveEditor.ViewModels
             var typeName = this.GetType().ToString();
             if (typeName.Contains("."))
                 typeName = typeName.Split('.').Last();
-            return $"{typeName}: x: {this.Left:F0}, y: {this.Right:F0}, rot: {this.RotationAngle:F1}";
+            return $"{typeName}: x: {this.Left:F0}, y: {this.Right:F0}, w: {this.Width:F0}, h: {this.Height:F0} r: {this.RotationAngle:F1}";
         }
     }
 }

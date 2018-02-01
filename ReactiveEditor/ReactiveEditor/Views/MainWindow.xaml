@@ -41,6 +41,15 @@
                         Height="20"
                         Fill="Black" />
                 </Button>
+                <Button Command="{Binding AddTriangleCommand}" Style="{StaticResource DisableButtonStyle}">
+                    <Polygon
+                        Width="20"
+                        Height="20"
+                        Fill="Black"
+                        Points="0,1 1,1 0.5,0"
+                        Stretch="Uniform"
+                        Stroke="Black" />
+                </Button>
                 <Button Command="{Binding AddSquareCommand}" Style="{StaticResource DisableButtonStyle}">
                     <Rectangle
                         Width="20"
@@ -116,6 +125,9 @@
                     </DataTemplate>
                     <DataTemplate DataType="{x:Type vm:CircleVM}">
                         <uc:MovableCircle />
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type vm:TriangleVM}">
+                        <uc:MovableTriangle />
                     </DataTemplate>
                 </ListView.Resources>
                 <ListView.ItemsPanel>
