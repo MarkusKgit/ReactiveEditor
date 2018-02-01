@@ -1,4 +1,4 @@
-﻿<local:MovableControl
+﻿<local:MovableTriangleNonGeneric
     x:Class="ReactiveEditor.UserControls.MovableTriangle"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,13 +6,8 @@
     xmlns:local="clr-namespace:ReactiveEditor.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:ReactiveEditor.ViewModels"
-    Width="{Binding Width}"
-    Height="{Binding Height}"
-    d:DataContext="{d:DesignInstance vm:TriangleVM,
-                                     IsDesignTimeCreatable=True}"
-    d:DesignHeight="20"
-    d:DesignWidth="40"
-    x:TypeArguments="vm:TriangleVM"
+    Width="{Binding Width, FallbackValue=40}"
+    Height="{Binding Height, FallbackValue=40}"
     mc:Ignorable="d">
     <Grid>
         <Polygon
@@ -21,4 +16,4 @@
             Stretch="Fill"
             Stroke="Black" />
     </Grid>
-</local:MovableControl>
+</local:MovableTriangleNonGeneric>
