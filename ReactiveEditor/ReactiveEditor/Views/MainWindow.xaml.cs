@@ -18,9 +18,10 @@ namespace ReactiveEditor.Views
         public MainWindow()
         {
             InitializeComponent();
-            // Not using IOC here so create VM manually
-            this.ViewModel = new MainWindowVM();
-            this.DataContext = ViewModel;
+
+            ViewModel = new MainWindowVM();
+            this.WhenAnyValue(x => x.ViewModel).BindTo(this, x => x.DataContext);
+
             var rKeyPressed = this.Events().KeyDown.Where(e => e.Key == Key.R);
             //Set up disposable subscriptions
             this.WhenActivated(d =>
