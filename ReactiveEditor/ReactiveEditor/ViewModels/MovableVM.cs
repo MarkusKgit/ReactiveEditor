@@ -94,12 +94,33 @@ namespace ReactiveEditor.ViewModels
                 .Subscribe(r => this.RotationAngle = Math.Abs(r) % 360);
         }
 
+        protected MovableVM(MovableVM other) : this()
+        {
+            Copy(other);
+        }
+
         public override string ToString()
         {
             var typeName = this.GetType().ToString();
             if (typeName.Contains("."))
                 typeName = typeName.Split('.').Last();
-            return $"{typeName}: x: {this.Left:F0}, y: {this.Right:F0}, w: {this.Width:F0}, h: {this.Height:F0} r: {this.RotationAngle:F1}";
+            return $"{typeName}: x: {this.Left:F0}, y: {this.Top:F0}, w: {this.Width:F0}, h: {this.Height:F0} r: {this.RotationAngle:F1}";
+        }
+
+        public abstract object Clone();
+
+        public virtual void Copy(object from)
+        {
+            if (from is MovableVM other)
+            {
+                Left = other.Left;
+                Top = other.Top;
+                Height = other.Height;
+                Width = other.Width;
+                RotationAngle = other.RotationAngle;
+                IsMoving = other.IsMoving;
+                IsSelected = other.IsSelected;
+            }
         }
     }
 }

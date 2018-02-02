@@ -88,6 +88,13 @@
                     Command="{Binding DeleteSelectedCommand}"
                     Content="✂"
                     ToolTip="Delete [Del]" />
+
+                <Button
+                    Margin="2,0"
+                    Command="{Binding EditCommand}"
+                    CommandParameter="{Binding SelectedMovables[0]}"
+                    Content="Edit"
+                    ToolTip="Delete [Del]" />
             </ToolBar>
         </ToolBarTray>
         <Border

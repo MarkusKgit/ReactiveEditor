@@ -1,6 +1,6 @@
 ﻿namespace ReactiveEditor.ViewModels
 {
-    public interface IMovable
+    public interface IMovable : IDuplicatable
     {
         double Left { get; set; }
         double Top { get; set; }

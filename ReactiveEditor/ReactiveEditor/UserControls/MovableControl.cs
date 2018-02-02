@@ -30,6 +30,7 @@ namespace ReactiveEditor.UserControls
                 //Hook up mouse events for movement handling
                 d.Invoke(this.Events()
                     .MouseLeftButtonDown
+                    .Where(e => e.ClickCount == 1)
                     .Subscribe(x => LeftMouseDownHandler(x)));
                 d.Invoke(this.Events()
                     .MouseMove

@@ -1,8 +1,11 @@
 ﻿using ReactiveEditor.Helpers;
+using ReactiveEditor.Services;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -12,6 +15,8 @@ namespace ReactiveEditor.ViewModels
     public class MainWindowVM : ReactiveObject
     {
         private readonly Random rnd = new Random(DateTime.Now.Millisecond);
+
+        private readonly INavigationService navigationService;
 
         private IDisposable rectangleSpawner;
 
@@ -53,6 +58,8 @@ namespace ReactiveEditor.ViewModels
 
         public ReactiveCommand AddTriangleCommand { get; private set; }
 
+        public ReactiveCommand<IMovable, Unit> EditCommand { get; private set; }
+
         public ReactiveCommand DeselectAllCommand { get; private set; }
 
         public ReactiveCommand RotateSelectedCommand { get; private set; }
@@ -61,8 +68,10 @@ namespace ReactiveEditor.ViewModels
 
         public ReactiveCommand ToggleSquareSpawnerCommand { get; private set; }
 
-        public MainWindowVM()
+        public MainWindowVM(INavigationService navigationService = null)
         {
+            this.navigationService = navigationService ?? Locator.CurrentMutable.GetService<INavigationService>();
+
             Movables = new ReactiveList<IMovable>
             {
                 ChangeTrackingEnabled = true
@@ -85,6 +94,8 @@ namespace ReactiveEditor.ViewModels
 
             AddTriangleCommand = ReactiveCommand.Create(AddTriangle);
 
+            var oneSelected = SelectedMovables.CountChanged.Select(c => c == 1);
+            EditCommand = ReactiveCommand.Create<IMovable>(param => EditMovable(param), oneSelected);
             //Some commands only make sense when something is selected
             var anythingSelected = SelectedMovables.CountChanged.Select(c => c > 0);
             DeselectAllCommand = ReactiveCommand.Create(DeselectAll, anythingSelected);
@@ -101,27 +112,43 @@ namespace ReactiveEditor.ViewModels
                 .Subscribe(x => MovableMoved(x[0].Sender, x[0].Pos, x[1].Pos));
         }
 
+        private void EditMovable(IMovable mv)
+        {
+            if (mv == null)
+                return;
+            var editVM = new EditVM { Title = "Edit " + mv.GetType().Name.TrimEnd("VM".ToCharArray()), EditableVM = mv };
+            navigationService.ShowModalEditView(editVM);
+        }
+
         private void AddCircle()
         {
-            AddMovable(new CircleVM { Width = rnd.NextDouble() * 50 + 20 });
+            AddMovable(new CircleVM { Width = GetRandomDouble(1) * 50.0 + 20 });
         }
 
         private void AddSquare()
         {
             var randomColor = Color.FromRgb((byte)rnd.Next(256), (byte)rnd.Next(256), (byte)rnd.Next(256));
-            AddMovable(new SquareVM { Width = rnd.NextDouble() * 50 + 20, Color = randomColor });
+            AddMovable(new SquareVM { Width = GetRandomDouble(1) * 50.0 + 20.0, Color = randomColor });
         }
 
         private void AddTriangle()
         {
-            AddMovable(new TriangleVM { Height = rnd.NextDouble() * 50 + 20, Width = rnd.NextDouble() * 50 + 20 });
+            AddMovable(new TriangleVM { Height = GetRandomDouble(1) * 50.0 + 20.0, Width = GetRandomDouble(1) * 50 + 20 });
         }
 
         private void AddMovable(IMovable movable)
         {
-            movable.Left = rnd.NextDouble() * (drawAreaWidth > 0 ? (drawAreaWidth - movable.Width) : 200);
-            movable.Top = rnd.NextDouble() * (drawAreaHeight > 0 ? (drawAreaHeight - movable.Height) : 200);
+            movable.Left = GetRandomDouble(1) * (drawAreaWidth > 0 ? (drawAreaWidth - movable.Width) : 200.0);
+            movable.Top = GetRandomDouble(1) * (drawAreaHeight > 0 ? (drawAreaHeight - movable.Height) : 200.0);
             Movables.Add(movable);
+        }
+
+        private double GetRandomDouble(int precision)
+        {
+            if (precision < 0 || precision > 9)
+                throw new ArgumentOutOfRangeException();
+            int fac = (int)Math.Pow(10, precision);
+            return rnd.Next(0, fac) / (fac * 1.0);
         }
 
         private void DeleteSelected()
