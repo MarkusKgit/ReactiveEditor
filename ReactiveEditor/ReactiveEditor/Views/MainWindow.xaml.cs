@@ -32,6 +32,8 @@ namespace ReactiveEditor.Views
                     ViewModel
                     .SelectedMovables
                     .ItemChanged
+                    .Throttle(TimeSpan.FromMilliseconds(100))
+                    .ObserveOn(RxApp.MainThreadScheduler)
                     .Subscribe(_ => this.SelectedInfoView.Items.Refresh())
                     );
                 //Report Width and Height to the Viewmodel
