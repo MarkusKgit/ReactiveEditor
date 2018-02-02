@@ -85,6 +85,12 @@
 
                 <Button
                     Margin="2,0"
+                    Command="{Binding DuplicateSelectedCommand}"
+                    Content="⎘"
+                    ToolTip="Duplicate" />
+
+                <Button
+                    Margin="2,0"
                     Command="{Binding DeleteSelectedCommand}"
                     Content="✂"
                     ToolTip="Delete [Del]" />

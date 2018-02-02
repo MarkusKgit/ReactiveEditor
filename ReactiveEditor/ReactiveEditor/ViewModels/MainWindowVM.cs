@@ -64,6 +64,8 @@ namespace ReactiveEditor.ViewModels
 
         public ReactiveCommand RotateSelectedCommand { get; private set; }
 
+        public ReactiveCommand DuplicateSelectedCommand { get; private set; }
+
         public ReactiveCommand DeleteSelectedCommand { get; private set; }
 
         public ReactiveCommand ToggleSquareSpawnerCommand { get; private set; }
@@ -100,6 +102,7 @@ namespace ReactiveEditor.ViewModels
             var anythingSelected = SelectedMovables.CountChanged.Select(c => c > 0);
             DeselectAllCommand = ReactiveCommand.Create(DeselectAll, anythingSelected);
             RotateSelectedCommand = ReactiveCommand.Create(RotateSelected, anythingSelected);
+            DuplicateSelectedCommand = ReactiveCommand.Create(DuplicateSelected, anythingSelected);
             DeleteSelectedCommand = ReactiveCommand.Create(DeleteSelected, anythingSelected);
             ToggleSquareSpawnerCommand = ReactiveCommand.Create(ToggleSquareSpawner, canCreateSquares);
 
@@ -154,6 +157,24 @@ namespace ReactiveEditor.ViewModels
                 throw new ArgumentOutOfRangeException();
             int fac = (int)Math.Pow(10, precision);
             return rnd.Next(0, fac) / (fac * 1.0);
+        }
+
+        private void DuplicateSelected()
+        {
+            var newItems = new List<IMovable>();
+            for (int i = selectedMovables.Count - 1; i >= 0; i--)
+            {
+                var oldItem = selectedMovables[i];
+                var newItem = oldItem.Clone() as IMovable;
+                oldItem.IsSelected = false;
+                newItem.Left += 10;
+                newItem.Top += 10;
+                newItems.Add(newItem);
+            }
+            foreach (var item in newItems)
+            {
+                Movables.Add(item);
+            }
         }
 
         private void DeleteSelected()
