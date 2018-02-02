@@ -139,10 +139,10 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="{x:Type ListViewItem}">
-                                    <Grid RenderTransformOrigin="0.5, 0.5">
-                                        <Grid.RenderTransform>
+                                    <Grid>
+                                        <Grid.LayoutTransform>
                                             <RotateTransform Angle="{Binding RotationAngle}" />
-                                        </Grid.RenderTransform>
+                                        </Grid.LayoutTransform>
                                         <Grid.Style>
                                             <Style>
                                                 <Style.Triggers>

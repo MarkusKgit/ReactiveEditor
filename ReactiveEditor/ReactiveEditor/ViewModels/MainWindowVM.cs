@@ -110,6 +110,11 @@ namespace ReactiveEditor.ViewModels
                 .Buffer(2, 1)
                 .Where(x => x[0].Sender == x[1].Sender)
                 .Subscribe(x => MovableMoved(x[0].Sender, x[0].Pos, x[1].Pos));
+
+            //Movables.ItemChanged
+            //    .Where(x => x.PropertyName == nameof(IMovable.RotationAngle))
+            //    .Select(x => x.Sender)
+            //    .Subscribe(CheckBounds);
         }
 
         private void EditMovable(IMovable mv)
@@ -174,17 +179,22 @@ namespace ReactiveEditor.ViewModels
             if (Math.Abs(deltaX) < 1e-6 && Math.Abs(deltaY) < 1e-6)
                 return;
 
+            foreach (var item in selectedMovables.Where(x => x != sender))
+            {
+                item.Left = item.Left + deltaX;
+                item.Top = item.Top + deltaY;
+            }
+            CheckBounds(sender);
+        }
+
+        private void CheckBounds(IMovable movedMovable)
+        {
             var minX = double.PositiveInfinity;
             var minY = double.PositiveInfinity;
             var maxX = double.NegativeInfinity;
             var maxY = double.NegativeInfinity;
             foreach (var item in selectedMovables)
             {
-                if (item != sender)
-                {
-                    item.Left = item.Left + deltaX;
-                    item.Top = item.Top + deltaY;
-                }
                 if (item.Left < minX)
                     minX = item.Left;
                 if (item.Top < minY)
@@ -197,22 +207,22 @@ namespace ReactiveEditor.ViewModels
 
             if (minX < 1e-6)
             {
-                sender.Left = sender.Left + Math.Abs(minX);
+                movedMovable.Left = movedMovable.Left + Math.Abs(minX);
             }
 
             if (minY < 0)
             {
-                sender.Top = sender.Top + Math.Abs(minY);
+                movedMovable.Top = movedMovable.Top + Math.Abs(minY);
             }
 
             if (maxX > drawAreaWidth)
             {
-                sender.Left = sender.Left - (maxX - drawAreaWidth);
+                movedMovable.Left = movedMovable.Left - (maxX - drawAreaWidth);
             }
 
             if (maxY > drawAreaHeight)
             {
-                sender.Top = sender.Top - (maxY - drawAreaHeight);
+                movedMovable.Top = movedMovable.Top - (maxY - drawAreaHeight);
             }
         }
 
