@@ -10,6 +10,7 @@
     Title="{Binding Title}"
     Width="Auto"
     Height="Auto"
+    MinWidth="200"
     WindowStartupLocation="CenterScreen"
     d:DataContext="{d:DesignInstance vm:EditVM,
                                      IsDesignTimeCreatable=True}"

@@ -25,6 +25,9 @@ namespace ReactiveEditor
 
             Locator.CurrentMutable.Register(() => new EditHost(), typeof(IViewFor<EditVM>));
 
+            Locator.CurrentMutable.Register(() => new ConnectionControl(), typeof(IViewFor<ConnectionVM>));
+            Locator.CurrentMutable.Register(() => new ConnectionEditor(), typeof(IViewFor<ConnectionVM>), "EditView");
+
             Locator.CurrentMutable.Register(() => new MovableSquare(), typeof(IViewFor<SquareVM>));
             Locator.CurrentMutable.Register(() => new SquareEditor(), typeof(IViewFor<SquareVM>), "EditView");
 

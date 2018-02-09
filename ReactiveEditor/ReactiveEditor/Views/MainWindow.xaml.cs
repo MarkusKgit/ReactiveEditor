@@ -15,6 +15,8 @@ namespace ReactiveEditor.Views
     /// </summary>
     public partial class MainWindow : Window, IViewFor<MainWindowVM>
     {
+        private readonly Key[] disabledKeys = { Key.Left, Key.Right, Key.Up, Key.Down, Key.PageUp, Key.PageDown, Key.Home, Key.End };
+
         public MainWindow()
         {
             InitializeComponent();
@@ -23,6 +25,7 @@ namespace ReactiveEditor.Views
             this.WhenAnyValue(x => x.ViewModel).BindTo(this, x => x.DataContext);
 
             var rKeyPressed = this.Events().KeyDown.Where(e => e.Key == Key.R);
+            var cKeyPressed = this.Events().KeyDown.Where(e => e.Key == Key.C);
 
             //Set up disposable subscriptions
             this.WhenActivated(d =>
@@ -30,7 +33,7 @@ namespace ReactiveEditor.Views
                 //Notify the ListView that an item has changed to update the info
                 d.Invoke(
                     ViewModel
-                    .SelectedShapes
+                    .SelectedVisuals
                     .ItemChanged
                     .Throttle(TimeSpan.FromMilliseconds(100))
                     .ObserveOn(RxApp.MainThreadScheduler)
@@ -60,20 +63,27 @@ namespace ReactiveEditor.Views
                     .InvokeCommand(ViewModel.DeleteSelectedCommand)
                     );
                 d.Invoke(
+                    cKeyPressed
+                    .ToUnit()
+                    .InvokeCommand(ViewModel.ConnectCommand)
+                    );
+                d.Invoke(
                     rKeyPressed
                     .ToUnit()
                     .InvokeCommand(ViewModel.RotateSelectedCommand
                     ));
-                //By default r changes focused element -> disable this behaviour by setting handled
+                //By default r and c and arrow keys change focused element -> disable this behaviour by setting handled
                 d.Invoke(
                     rKeyPressed
+                    .Merge(cKeyPressed)
+                    .Merge(this.Events().PreviewKeyDown.Where(x => disabledKeys.Contains(x.Key)))
                     .Subscribe(e => { e.Handled = true; })
                     );
                 //Edit element on double click
                 d.Invoke(
                     drawArea.Events()
                     .MouseDoubleClick
-                    .Select(_ => ViewModel.SelectedShapes.FirstOrDefault())
+                    .Select(_ => ViewModel.SelectedVisuals.FirstOrDefault())
                     .InvokeCommand(ViewModel.EditCommand)
                     );
             });

@@ -5,68 +5,14 @@ using System.Reactive.Linq;
 
 namespace ReactiveEditor.ViewModels
 {
-    public abstract class MovableVM : ReactiveObject, IMovable
+    public abstract class MovableVM : VisualVM, IMovable
     {
-        private double left;
-
-        public double Left
-        {
-            get { return left; }
-            set { this.RaiseAndSetIfChanged(ref left, value); }
-        }
-
-        private double top;
-
-        public double Top
-        {
-            get { return top; }
-            set { this.RaiseAndSetIfChanged(ref top, value); }
-        }
-
-        private double height;
-
-        public double Height
-        {
-            get { return height; }
-            set { this.RaiseAndSetIfChanged(ref height, value); }
-        }
-
-        private double width;
-
-        public double Width
-        {
-            get { return width; }
-            set { this.RaiseAndSetIfChanged(ref width, value); }
-        }
-
-        private readonly ObservableAsPropertyHelper<double> right;
-
-        public double Right
-        {
-            get { return right.Value; }
-        }
-
-        private readonly ObservableAsPropertyHelper<double> bottom;
-
-        public double Bottom
-        {
-            get { return bottom.Value; }
-        }
-
         private double rotationAngle;
 
         public double RotationAngle
         {
             get { return rotationAngle; }
             set { this.RaiseAndSetIfChanged(ref rotationAngle, value); }
-        }
-
-        private bool isSelected;
-
-        public bool IsSelected
-        {
-            get { return isSelected; }
-            set { this.RaiseAndSetIfChanged(ref isSelected, value); }
         }
 
         private bool isMoving;
@@ -82,21 +28,16 @@ namespace ReactiveEditor.ViewModels
             this.RotationAngle += 22.5;
         }
 
-        protected MovableVM()
+        protected MovableVM() : this(null)
         {
-            //Recalculate Right when either Left or Width changed
-            right = this.WhenAnyValue(x => x.Left, x => x.Width, (l, w) => l + w).ToProperty(this, x => x.Right);
-            //Recaculate Bottom when either Top or Height changed
-            bottom = this.WhenAnyValue(x => x.Top, x => x.Height, (t, h) => t + h).ToProperty(this, x => x.Bottom);
+        }
+
+        protected MovableVM(MovableVM other) : base(other)
+        {
             //Limit Rotation Angle to 0 <= r < 360
             this.WhenAnyValue(x => x.RotationAngle)
                 .Where(r => r >= 360 || r < 0)
                 .Subscribe(r => this.RotationAngle = Math.Abs(r) % 360);
-        }
-
-        protected MovableVM(MovableVM other) : this()
-        {
-            Copy(other);
         }
 
         public override string ToString()
@@ -107,17 +48,11 @@ namespace ReactiveEditor.ViewModels
             return $"{typeName}: x: {this.Left:F0}, y: {this.Top:F0}, w: {this.Width:F0}, h: {this.Height:F0} r: {this.RotationAngle:F1}";
         }
 
-        public abstract object Clone();
-
-        public virtual void Copy(object from)
+        public override void Copy(object from)
         {
+            base.Copy(from);
             if (from is MovableVM other)
             {
-                Left = other.Left;
-                Top = other.Top;
-                Height = other.Height;
-                Width = other.Width;
-                RotationAngle = other.RotationAngle;
                 IsMoving = other.IsMoving;
                 IsSelected = other.IsSelected;
             }
