@@ -41,6 +41,13 @@
                         Height="20"
                         Fill="Black" />
                 </Button>
+
+                <Button Command="{Binding AddSquareCommand}" Style="{StaticResource DisableButtonStyle}">
+                    <Rectangle
+                        Width="20"
+                        Height="20"
+                        Fill="Black" />
+                </Button>
                 <Button Command="{Binding AddTriangleCommand}" Style="{StaticResource DisableButtonStyle}">
                     <Polygon
                         Width="20"
@@ -50,29 +57,31 @@
                         Stretch="Uniform"
                         Stroke="Black" />
                 </Button>
-                <Button Command="{Binding AddSquareCommand}" Style="{StaticResource DisableButtonStyle}">
-                    <Rectangle
-                        Width="20"
-                        Height="20"
-                        Fill="Black" />
-                </Button>
                 <ToggleButton
                     Margin="2,0"
-                    Command="{Binding ToggleSquareSpawnerCommand}"
+                    Command="{Binding ToggleSpawnerCommand}"
                     Style="{StaticResource DisableButtonStyle}">
                     <Grid Width="20" Height="20">
                         <Rectangle
-                            Width="15"
-                            Height="15"
+                            Width="9"
+                            Height="9"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Bottom"
-                            Fill="Gray" />
-                        <Rectangle
-                            Width="15"
-                            Height="15"
-                            HorizontalAlignment="Right"
+                            Fill="DarkGray" />
+                        <Polygon
+                            Width="9"
+                            Height="9"
+                            HorizontalAlignment="Center"
                             VerticalAlignment="Top"
-                            Fill="Black" />
+                            Fill="Black"
+                            Points="0,1 1,1 0.5,0"
+                            Stretch="Uniform" />
+                        <Ellipse
+                            Width="9"
+                            Height="9"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Fill="SlateGray" />
                     </Grid>
                 </ToggleButton>
             </ToolBar>
@@ -98,7 +107,7 @@
                 <Button
                     Margin="2,0"
                     Command="{Binding EditCommand}"
-                    CommandParameter="{Binding SelectedMovables[0]}"
+                    CommandParameter="{Binding SelectedShapes[0]}"
                     Content="Edit"
                     ToolTip="Delete [Del]" />
             </ToolBar>
@@ -107,15 +116,23 @@
             Grid.Row="1"
             BorderBrush="Black"
             BorderThickness="1">
-            <StackPanel Orientation="Vertical">
-                <TextBlock Text="Selected:" TextAlignment="Center" />
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" TextAlignment="Center">
+                    <Run Text="Selected(" /><Run Text="{Binding SelectedShapes.Count, Mode=OneWay}" /><Run Text="):" />
+                </TextBlock>
                 <ListView
                     x:Name="SelectedInfoView"
+                    Grid.Row="1"
                     Margin="0,10,0,0"
                     Background="Transparent"
                     BorderThickness="0"
-                    ItemsSource="{Binding SelectedMovables}" />
-            </StackPanel>
+                    ItemsSource="{Binding SelectedShapes}"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto" />
+            </Grid>
         </Border>
         <GridSplitter
             Grid.Row="1"
@@ -128,8 +145,8 @@
             BorderThickness="5">
             <ListView
                 x:Name="drawArea"
-                helpers:ListViewExtensions.SelectedValues="{Binding SelectedMovables}"
-                ItemsSource="{Binding Movables}"
+                helpers:ListViewExtensions.SelectedValues="{Binding SelectedShapes}"
+                ItemsSource="{Binding Shapes}"
                 SelectionMode="Extended">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>

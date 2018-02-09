@@ -5,11 +5,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:ReactiveEditor.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:vm="clr-namespace:ReactiveEditor.ViewModels"
     Width="{Binding Width, FallbackValue=40}"
     Height="{Binding Height, FallbackValue=40}"
     mc:Ignorable="d">
     <Grid>
-        <Ellipse Fill="Black" />
+        <Grid.Resources>
+            <SolidColorBrush x:Key="BackgroundBrush" Color="{Binding Color, FallbackValue=Black}" />
+        </Grid.Resources>
+        <Ellipse Fill="{StaticResource BackgroundBrush}" Stroke="Black" />
     </Grid>
 </local:MovableCircleNonGeneric>

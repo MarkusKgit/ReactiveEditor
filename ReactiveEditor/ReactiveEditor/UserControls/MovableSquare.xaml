@@ -13,6 +13,6 @@
         <Grid.Resources>
             <SolidColorBrush x:Key="BackgroundBrush" Color="{Binding Color, FallbackValue=Red}" />
         </Grid.Resources>
-        <Rectangle Fill="{StaticResource BackgroundBrush}" />
+        <Rectangle Fill="{StaticResource BackgroundBrush}" Stroke="Black" />
     </Grid>
 </local:MovableSquareNonGeneric>

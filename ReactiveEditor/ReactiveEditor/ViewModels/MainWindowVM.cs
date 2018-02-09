@@ -36,20 +36,20 @@ namespace ReactiveEditor.ViewModels
             set { this.RaiseAndSetIfChanged(ref drawAreaHeight, value); }
         }
 
-        private ReactiveList<IMovable> movables;
+        private ReactiveList<IShape> shapes;
 
-        public ReactiveList<IMovable> Movables
+        public ReactiveList<IShape> Shapes
         {
-            get { return movables; }
-            set { this.RaiseAndSetIfChanged(ref movables, value); }
+            get { return shapes; }
+            set { this.RaiseAndSetIfChanged(ref shapes, value); }
         }
 
-        private ReactiveList<IMovable> selectedMovables;
+        private ReactiveList<IShape> selectedShapes;
 
-        public ReactiveList<IMovable> SelectedMovables
+        public ReactiveList<IShape> SelectedShapes
         {
-            get { return selectedMovables; }
-            set { this.RaiseAndSetIfChanged(ref selectedMovables, value); }
+            get { return selectedShapes; }
+            set { this.RaiseAndSetIfChanged(ref selectedShapes, value); }
         }
 
         public ReactiveCommand AddCircleCommand { get; private set; }
@@ -58,7 +58,7 @@ namespace ReactiveEditor.ViewModels
 
         public ReactiveCommand AddTriangleCommand { get; private set; }
 
-        public ReactiveCommand<IMovable, Unit> EditCommand { get; private set; }
+        public ReactiveCommand<IShape, Unit> EditCommand { get; private set; }
 
         public ReactiveCommand DeselectAllCommand { get; private set; }
 
@@ -68,87 +68,87 @@ namespace ReactiveEditor.ViewModels
 
         public ReactiveCommand DeleteSelectedCommand { get; private set; }
 
-        public ReactiveCommand ToggleSquareSpawnerCommand { get; private set; }
+        public ReactiveCommand ToggleSpawnerCommand { get; private set; }
 
         public MainWindowVM(INavigationService navigationService = null)
         {
             this.navigationService = navigationService ?? Locator.CurrentMutable.GetService<INavigationService>();
 
-            Movables = new ReactiveList<IMovable>
+            Shapes = new ReactiveList<IShape>
             {
                 ChangeTrackingEnabled = true
             };
-            SelectedMovables = new ReactiveList<IMovable>
+            SelectedShapes = new ReactiveList<IShape>
             {
                 ChangeTrackingEnabled = true
             };
-            AddCircle();
-            AddSquare();
-            AddTriangle();
 
-            //Limit Circles to 5
-            var canCreateCircles = Movables.Changed.ToUnit().Select(_ => Movables.Count(m => m is CircleVM) < 5).StartWith(true);
-            AddCircleCommand = ReactiveCommand.Create(AddCircle, canCreateCircles);
+            AddCircleCommand = ReactiveCommand.Create(AddCircle);
 
             //Only allow Squares when there are at least 2 Circles
-            var canCreateSquares = Movables.Changed.ToUnit().Select(_ => Movables.Count(m => m is CircleVM) >= 2);
+            var canCreateSquares = Shapes
+                .Changed
+                .ToUnit()
+                .Select(_ => Shapes.Count(m => m is CircleVM) >= 2);
             AddSquareCommand = ReactiveCommand.Create(AddSquare, canCreateSquares);
 
-            AddTriangleCommand = ReactiveCommand.Create(AddTriangle);
+            //Limit Triangles to Number of Squares / 2
+            var canCreateTriangles = Shapes
+                .Changed
+                .ToUnit()
+                .Select(_ => Shapes.Count(m => m is TriangleVM) < Shapes.Count(m => m is SquareVM) / 2)
+                .StartWith(false);
+            AddTriangleCommand = ReactiveCommand.Create(AddTriangle, canCreateTriangles);
 
-            var oneSelected = SelectedMovables.CountChanged.Select(c => c == 1);
-            EditCommand = ReactiveCommand.Create<IMovable>(param => EditMovable(param), oneSelected);
+            var oneSelected = SelectedShapes.CountChanged.Select(c => c == 1);
+            EditCommand = ReactiveCommand.Create<IShape>(param => EditShape(param), oneSelected);
             //Some commands only make sense when something is selected
-            var anythingSelected = SelectedMovables.CountChanged.Select(c => c > 0);
+            var anythingSelected = SelectedShapes.CountChanged.Select(c => c > 0);
             DeselectAllCommand = ReactiveCommand.Create(DeselectAll, anythingSelected);
             RotateSelectedCommand = ReactiveCommand.Create(RotateSelected, anythingSelected);
             DuplicateSelectedCommand = ReactiveCommand.Create(DuplicateSelected, anythingSelected);
             DeleteSelectedCommand = ReactiveCommand.Create(DeleteSelected, anythingSelected);
-            ToggleSquareSpawnerCommand = ReactiveCommand.Create(ToggleSquareSpawner, canCreateSquares);
+            ToggleSpawnerCommand = ReactiveCommand.Create(ToggleSpawner);
 
             //When one item is moved manually move all the other selected movables too
-            Movables.ItemChanged
+            Shapes.ItemChanged
                 .Where(x => x.Sender.IsMoving)
                 .Select(x => new { x.Sender, Pos = new Point(x.Sender.Left, x.Sender.Top) })
                 .Buffer(2, 1)
                 .Where(x => x[0].Sender == x[1].Sender)
                 .Subscribe(x => MovableMoved(x[0].Sender, x[0].Pos, x[1].Pos));
-
-            //Movables.ItemChanged
-            //    .Where(x => x.PropertyName == nameof(IMovable.RotationAngle))
-            //    .Select(x => x.Sender)
-            //    .Subscribe(CheckBounds);
         }
 
-        private void EditMovable(IMovable mv)
+        private void EditShape(IShape shape)
         {
-            if (mv == null)
+            if (shape == null)
                 return;
-            var editVM = new EditVM { Title = "Edit " + mv.GetType().Name.TrimEnd("VM".ToCharArray()), EditableVM = mv };
+            var editVM = new EditVM { Title = "Edit " + shape.GetType().Name.TrimEnd("VM".ToCharArray()), EditableVM = shape };
             navigationService.ShowModalEditView(editVM);
         }
 
         private void AddCircle()
         {
-            AddMovable(new CircleVM { Width = GetRandomDouble(1) * 50.0 + 20 });
+            AddShape(new CircleVM { Width = GetRandomDouble(1) * 150.0 + 10.0 });
         }
 
         private void AddSquare()
         {
-            var randomColor = Color.FromRgb((byte)rnd.Next(256), (byte)rnd.Next(256), (byte)rnd.Next(256));
-            AddMovable(new SquareVM { Width = GetRandomDouble(1) * 50.0 + 20.0, Color = randomColor });
+            AddShape(new SquareVM { Width = GetRandomDouble(1) * 50.0 + 10.0 });
         }
 
         private void AddTriangle()
         {
-            AddMovable(new TriangleVM { Height = GetRandomDouble(1) * 50.0 + 20.0, Width = GetRandomDouble(1) * 50 + 20 });
+            AddShape(new TriangleVM { Height = GetRandomDouble(1) * 100.0 + 10.0, Width = GetRandomDouble(1) * 100 + 10.0 });
         }
 
-        private void AddMovable(IMovable movable)
+        private void AddShape(IShape shape)
         {
-            movable.Left = GetRandomDouble(1) * (drawAreaWidth > 0 ? (drawAreaWidth - movable.Width) : 200.0);
-            movable.Top = GetRandomDouble(1) * (drawAreaHeight > 0 ? (drawAreaHeight - movable.Height) : 200.0);
-            Movables.Add(movable);
+            var randomColor = Color.FromRgb((byte)rnd.Next(256), (byte)rnd.Next(256), (byte)rnd.Next(256));
+            shape.Color = randomColor;
+            shape.Left = GetRandomDouble(1) * (drawAreaWidth > 0 ? (drawAreaWidth - shape.Width) : 200.0);
+            shape.Top = GetRandomDouble(1) * (drawAreaHeight > 0 ? (drawAreaHeight - shape.Height) : 200.0);
+            Shapes.Add(shape);
         }
 
         private double GetRandomDouble(int precision)
@@ -161,11 +161,11 @@ namespace ReactiveEditor.ViewModels
 
         private void DuplicateSelected()
         {
-            var newItems = new List<IMovable>();
-            for (int i = selectedMovables.Count - 1; i >= 0; i--)
+            var newItems = new List<IShape>();
+            for (int i = selectedShapes.Count - 1; i >= 0; i--)
             {
-                var oldItem = selectedMovables[i];
-                var newItem = oldItem.Clone() as IMovable;
+                var oldItem = selectedShapes[i];
+                var newItem = oldItem.Clone() as IShape;
                 oldItem.IsSelected = false;
                 newItem.Left += 10;
                 newItem.Top += 10;
@@ -173,24 +173,24 @@ namespace ReactiveEditor.ViewModels
             }
             foreach (var item in newItems)
             {
-                Movables.Add(item);
+                Shapes.Add(item);
             }
         }
 
         private void DeleteSelected()
         {
-            Movables.RemoveAll(new List<IMovable>(selectedMovables));
+            Shapes.RemoveAll(new List<IShape>(selectedShapes));
         }
 
         private void DeselectAll()
         {
-            if (SelectedMovables == null || SelectedMovables.Count < 1)
+            if (SelectedShapes == null || SelectedShapes.Count < 1)
                 return;
-            for (int i = SelectedMovables.Count - 1; i >= 0; i--)
+            for (int i = SelectedShapes.Count - 1; i >= 0; i--)
             {
-                Movables[i].IsSelected = false;
+                Shapes[i].IsSelected = false;
             }
-            SelectedMovables.Clear();
+            SelectedShapes.Clear();
         }
 
         private void MovableMoved(IMovable sender, Point oldPos, Point newPos)
@@ -200,7 +200,7 @@ namespace ReactiveEditor.ViewModels
             if (Math.Abs(deltaX) < 1e-6 && Math.Abs(deltaY) < 1e-6)
                 return;
 
-            foreach (var item in selectedMovables.Where(x => x != sender))
+            foreach (var item in selectedShapes.Where(x => x != sender))
             {
                 item.Left = item.Left + deltaX;
                 item.Top = item.Top + deltaY;
@@ -214,7 +214,7 @@ namespace ReactiveEditor.ViewModels
             var minY = double.PositiveInfinity;
             var maxX = double.NegativeInfinity;
             var maxY = double.NegativeInfinity;
-            foreach (var item in selectedMovables)
+            foreach (var item in selectedShapes)
             {
                 if (item.Left < minX)
                     minX = item.Left;
@@ -249,21 +249,40 @@ namespace ReactiveEditor.ViewModels
 
         private void RotateSelected()
         {
-            foreach (var item in selectedMovables)
+            foreach (var item in selectedShapes)
             {
                 item.Rotate();
             }
         }
 
-        private void ToggleSquareSpawner()
+        private void CreateRandomMovable()
+        {
+            var roll = rnd.Next(0, 2);
+            switch (roll)
+            {
+                case 0:
+                    AddCircle();
+                    break;
+                case 1:
+                    AddTriangle();
+                    break;
+                case 2:
+                    AddSquare();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void ToggleSpawner()
         {
             if (rectangleSpawner == null)
             {
                 rectangleSpawner = Observable
-                .Interval(TimeSpan.FromSeconds(1))
+                .Interval(TimeSpan.FromMilliseconds(500))
                 .ToUnit()
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .InvokeCommand(AddSquareCommand);
+                .Subscribe(_ => CreateRandomMovable());
             }
             else
             {

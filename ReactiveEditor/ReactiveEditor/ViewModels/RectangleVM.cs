@@ -1,19 +1,8 @@
-﻿using ReactiveUI;
-using System.Windows.Media;
-
-namespace ReactiveEditor.ViewModels
+﻿namespace ReactiveEditor.ViewModels
 {
-    public class RectangleVM : MovableVM
+    public class RectangleVM : ShapeVM
     {
-        private Color color = Colors.Blue;
-
-        public Color Color
-        {
-            get { return color; }
-            set { this.RaiseAndSetIfChanged(ref color, value); }
-        }
-
-        public RectangleVM()
+        public RectangleVM() : this(null)
         {
         }
 
@@ -24,15 +13,6 @@ namespace ReactiveEditor.ViewModels
         public override object Clone()
         {
             return new RectangleVM(this);
-        }
-
-        public override void Copy(object from)
-        {
-            base.Copy(from);
-            if (from is RectangleVM other)
-            {
-                Color = other.Color;
-            }
         }
     }
 }

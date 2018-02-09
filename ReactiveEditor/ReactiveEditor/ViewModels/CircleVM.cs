@@ -3,7 +3,7 @@ using System;
 
 namespace ReactiveEditor.ViewModels
 {
-    public class CircleVM : MovableVM
+    public class CircleVM : ShapeVM
     {
         public CircleVM() : this(null)
         {

@@ -1,8 +1,8 @@
 ﻿namespace ReactiveEditor.ViewModels
 {
-    public class TriangleVM : MovableVM
+    public class TriangleVM : ShapeVM
     {
-        public TriangleVM()
+        public TriangleVM() : this(null)
         {
         }
 

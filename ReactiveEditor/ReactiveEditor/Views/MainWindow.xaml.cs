@@ -30,7 +30,7 @@ namespace ReactiveEditor.Views
                 //Notify the ListView that an item has changed to update the info
                 d.Invoke(
                     ViewModel
-                    .SelectedMovables
+                    .SelectedShapes
                     .ItemChanged
                     .Throttle(TimeSpan.FromMilliseconds(100))
                     .ObserveOn(RxApp.MainThreadScheduler)
@@ -73,7 +73,7 @@ namespace ReactiveEditor.Views
                 d.Invoke(
                     drawArea.Events()
                     .MouseDoubleClick
-                    .Select(_ => ViewModel.SelectedMovables.FirstOrDefault())
+                    .Select(_ => ViewModel.SelectedShapes.FirstOrDefault())
                     .InvokeCommand(ViewModel.EditCommand)
                     );
             });

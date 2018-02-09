@@ -114,9 +114,11 @@
     <Compile Include="ViewModels\EditVM.cs" />
     <Compile Include="ViewModels\IDuplicatable.cs" />
     <Compile Include="ViewModels\IMovable.cs" />
+    <Compile Include="ViewModels\IShape.cs" />
     <Compile Include="ViewModels\MainWindowVM.cs" />
     <Compile Include="ViewModels\MovableVM.cs" />
     <Compile Include="ViewModels\RectangleVM.cs" />
+    <Compile Include="ViewModels\ShapeVM.cs" />
     <Compile Include="ViewModels\SquareVM.cs" />
     <Compile Include="Views\CircleEditor.xaml.cs">
       <DependentUpon>CircleEditor.xaml</DependentUpon>
