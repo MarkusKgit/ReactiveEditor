@@ -11,7 +11,7 @@ namespace ReactiveEditor.UserControls
 {
     public abstract class MovableControl<T> : ReactiveUserControl<T> where T : ReactiveObject, IMovable
     {
-        private Point transformedMouseDownLocation;
+        private Point transformedDownLocation;
         private double oldX;
         private double oldY;
 
@@ -33,42 +33,73 @@ namespace ReactiveEditor.UserControls
                     .Where(e => e.ClickCount == 1)
                     .Subscribe(x => LeftMouseDownHandler(x)));
                 d.Invoke(this.Events()
+                    .TouchDown
+                    .Subscribe(x => TouchDownEventHandler(x)));
+                d.Invoke(this.Events()
                     .MouseMove
                     .Sample(TimeSpan.FromMilliseconds(20)) // Limit mouse move updates
                     .ObserveOn(RxApp.MainThreadScheduler)
                     .Subscribe(e => MouseMoveHandler(e)));
                 d.Invoke(this.Events()
+                    .TouchMove
+                    .Sample(TimeSpan.FromMilliseconds(20)) // Limit mouse move updates
+                    .ObserveOn(RxApp.MainThreadScheduler)
+                    .Subscribe(e => TouchMoveHandler(e)));
+                d.Invoke(this.Events()
                     .MouseLeftButtonUp
                     .Subscribe(_ => LeftMouseUpHandler()));
+                d.Invoke(this.Events()
+                    .TouchUp
+                    .Subscribe(_ => TouchUpHandler()));
                 d.Invoke(this.Events()
                     .MouseLeave
                     .Subscribe(_ => MouseLeaveHandler()));
             });
         }
 
-        private void LeftMouseDownHandler(MouseButtonEventArgs e)
+        private void TouchDownEventHandler(TouchEventArgs e)
         {
-            oldX = ViewModel.Left;
-            oldY = ViewModel.Top;
-            var mousePoint = e.GetPosition(this);
-            //Transform MousePoint with the rotation to get the real x,y Point
-            transformedMouseDownLocation = rotateTransform.Transform(mousePoint);
-            //Signal we are moving this instance manually
-            ViewModel.IsMoving = true;
-            //Capture the mouse so we dont drag the cursor out of the bounds of the control
-            Mouse.Capture(this);
+            MouseAndTouchDown(e.GetTouchPoint(this).Position);
             //Bubble event based on Selection to allow for selection/movement
             e.Handled = ViewModel.IsSelected;
         }
 
+        private void LeftMouseDownHandler(MouseEventArgs e)
+        {
+            MouseAndTouchDown(e.GetPosition(this));
+            //Bubble event based on Selection to allow for selection/movement
+            e.Handled = ViewModel.IsSelected;
+            //Capture the mouse so we dont drag the cursor out of the bounds of the control
+            Mouse.Capture(this);
+        }
+
+        private void MouseAndTouchDown(Point downPoint)
+        {
+            oldX = ViewModel.Left;
+            oldY = ViewModel.Top;
+            //Transform MousePoint with the rotation to get the real x,y Point
+            transformedDownLocation = rotateTransform.Transform(downPoint);
+            //Signal we are moving this instance manually
+            ViewModel.IsMoving = true;
+        }
+
         private void MouseMoveHandler(MouseEventArgs e)
         {
-            var mousePoint = e.GetPosition(this);
-            var transformedMousePoint = rotateTransform.Transform(mousePoint);
+            MouseAndTouchMove(e.GetPosition(this));
+        }
+
+        private void TouchMoveHandler(TouchEventArgs e)
+        {
+            MouseAndTouchMove(e.GetTouchPoint(this).Position);
+        }
+
+        private void MouseAndTouchMove(Point location)
+        {
+            var transformedLocation = rotateTransform.Transform(location);
             if (ViewModel.IsMoving)
             {
-                var deltaX = transformedMousePoint.X - transformedMouseDownLocation.X;
-                var deltaY = transformedMousePoint.Y - transformedMouseDownLocation.Y;
+                var deltaX = transformedLocation.X - transformedDownLocation.X;
+                var deltaY = transformedLocation.Y - transformedDownLocation.Y;
                 var newX = ViewModel.Left + deltaX;
                 var newY = ViewModel.Top + deltaY;
                 // If Left or Top were changed externally since the last update only allow movement in the opposite direction (clipping)
@@ -89,6 +120,11 @@ namespace ReactiveEditor.UserControls
         {
             ViewModel.IsMoving = false;
             Mouse.Capture(null);
+        }
+
+        private void TouchUpHandler()
+        {
+            ViewModel.IsMoving = false;
         }
 
         private void MouseLeaveHandler()

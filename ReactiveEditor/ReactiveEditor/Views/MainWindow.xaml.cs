@@ -57,6 +57,12 @@ namespace ReactiveEditor.Views
                     );
                 d.Invoke(
                     this.Events()
+                    .TouchDown
+                    .ToUnit()
+                    .InvokeCommand(ViewModel.DeselectAllCommand)
+                    );
+                d.Invoke(
+                    this.Events()
                     .KeyDown
                     .Where(e => e.Key == Key.Delete)
                     .ToUnit()

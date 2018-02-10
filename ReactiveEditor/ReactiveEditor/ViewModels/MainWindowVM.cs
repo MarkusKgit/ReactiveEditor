@@ -262,12 +262,14 @@ namespace ReactiveEditor.ViewModels
 
         private void MovableMoved(IShape sender, Point oldPos, Point newPos)
         {
+            if (SelectedShapes == null)
+                return;
             var deltaX = newPos.X - oldPos.X;
             var deltaY = newPos.Y - oldPos.Y;
             if (Math.Abs(deltaX) < 1e-6 && Math.Abs(deltaY) < 1e-6)
                 return;
 
-            foreach (var item in SelectedShapes.Where(x => x != sender))
+            foreach (var item in SelectedShapes?.Where(x => x != sender))
             {
                 item.Left = item.Left + deltaX;
                 item.Top = item.Top + deltaY;
@@ -330,12 +332,15 @@ namespace ReactiveEditor.ViewModels
                 case 0:
                     AddCircle();
                     break;
+
                 case 1:
                     AddTriangle();
                     break;
+
                 case 2:
                     AddSquare();
                     break;
+
                 default:
                     break;
             }
