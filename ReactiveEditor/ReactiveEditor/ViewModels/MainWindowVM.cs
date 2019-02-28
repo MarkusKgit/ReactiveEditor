@@ -1,6 +1,7 @@
 ﻿using ReactiveEditor.Helpers;
 using ReactiveEditor.Services;
 using ReactiveUI;
+using ReactiveUI.Legacy;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -80,25 +81,25 @@ namespace ReactiveEditor.ViewModels
             get { return selectedConnections.Value; }
         }
 
-        public ReactiveCommand AddCircleCommand { get; private set; }
+        public ReactiveCommand<Unit,CircleVM> AddCircleCommand { get; private set; }
 
-        public ReactiveCommand AddSquareCommand { get; private set; }
+        public ReactiveCommand<Unit, SquareVM> AddSquareCommand { get; private set; }
 
-        public ReactiveCommand AddTriangleCommand { get; private set; }
+        public ReactiveCommand<Unit, TriangleVM> AddTriangleCommand { get; private set; }
 
         public ReactiveCommand<IVisual, Unit> EditCommand { get; private set; }
 
-        public ReactiveCommand DeselectAllCommand { get; private set; }
+        public ReactiveCommand<Unit,Unit> DeselectAllCommand { get; private set; }
 
-        public ReactiveCommand RotateSelectedCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> RotateSelectedCommand { get; private set; }
 
-        public ReactiveCommand DuplicateSelectedCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> DuplicateSelectedCommand { get; private set; }
 
-        public ReactiveCommand DeleteSelectedCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> DeleteSelectedCommand { get; private set; }
 
-        public ReactiveCommand ToggleSpawnerCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> ToggleSpawnerCommand { get; private set; }
 
-        public ReactiveCommand ConnectCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> ConnectCommand { get; private set; }
 
         public MainWindowVM(INavigationService navigationService = null)
         {

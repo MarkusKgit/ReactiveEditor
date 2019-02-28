@@ -1,4 +1,5 @@
 ﻿using ReactiveUI;
+using ReactiveUI.Legacy;
 using System.Collections.Generic;
 
 namespace ReactiveEditor.ViewModels
